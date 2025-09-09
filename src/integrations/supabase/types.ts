@@ -14,13 +14,231 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      leaderboard_rewards: {
+        Row: {
+          awarded_at: string
+          id: string
+          period_end: string
+          period_start: string
+          rank: number
+          reward_description: string
+          reward_value: number | null
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          rank: number
+          reward_description: string
+          reward_value?: number | null
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          rank?: number
+          reward_description?: string
+          reward_value?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lottery_draws: {
+        Row: {
+          draw_date: string
+          id: string
+          is_completed: boolean
+          prize_description: string
+          prize_value: number | null
+          winning_ticket_id: string | null
+        }
+        Insert: {
+          draw_date?: string
+          id?: string
+          is_completed?: boolean
+          prize_description: string
+          prize_value?: number | null
+          winning_ticket_id?: string | null
+        }
+        Update: {
+          draw_date?: string
+          id?: string
+          is_completed?: boolean
+          prize_description?: string
+          prize_value?: number | null
+          winning_ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lottery_draws_winning_ticket_id_fkey"
+            columns: ["winning_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "lottery_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lottery_tickets: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_used: boolean
+          mission_id: string
+          ticket_number: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          mission_id: string
+          ticket_number: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          mission_id?: string
+          ticket_number?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lottery_tickets_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      missions: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          difficulty: string
+          id: string
+          is_active: boolean
+          location: string | null
+          points: number
+          title: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          difficulty: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          points?: number
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          difficulty?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          points?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          completed_missions: number
+          created_at: string
+          current_xp: number
+          id: string
+          level: number
+          next_level_xp: number
+          total_missions: number
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          completed_missions?: number
+          created_at?: string
+          current_xp?: number
+          id?: string
+          level?: number
+          next_level_xp?: number
+          total_missions?: number
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          completed_missions?: number
+          created_at?: string
+          current_xp?: number
+          id?: string
+          level?: number
+          next_level_xp?: number
+          total_missions?: number
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      user_missions: {
+        Row: {
+          completed_at: string
+          id: string
+          mission_id: string
+          points_earned: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          mission_id: string
+          points_earned?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          mission_id?: string
+          points_earned?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_missions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_expired_tickets: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

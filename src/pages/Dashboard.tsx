@@ -1,63 +1,38 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MissionCard } from "@/components/MissionCard";
 import { ProgressCard } from "@/components/ProgressCard";
 import { LeaderboardCard } from "@/components/LeaderboardCard";
 import { WeeklyChallengeCard } from "@/components/WeeklyChallengeCard";
+import { PixelGame } from "@/components/PixelGame";
+import { AvatarUpload } from "@/components/AvatarUpload";
+import { LotteryTickets } from "@/components/LotteryTickets";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
+  Leaf, 
   Trophy, 
-  MapPin, 
   Users, 
-  Camera, 
+  User, 
+  MapPin, 
+  Target,
+  Zap,
+  Calendar,
   Settings,
-  Bell,
-  Search
+  LogOut,
+  Gamepad2,
+  Ticket
 } from "lucide-react";
-import heroImage from "@/assets/eco-hero.jpg";
-
-const mockMissions = [
-  {
-    id: "1",
-    title: "Plant Trees in Central Park",
-    description: "Join the community tree planting event and help green our city!",
-    points: 150,
-    difficulty: "medium" as const,
-    category: "Tree Planting",
-    timeEstimate: "2-3 hours",
-    participants: 24,
-    location: "Central Park, Zone A"
-  },
-  {
-    id: "2", 
-    title: "Recycle Electronics",
-    description: "Properly dispose of old electronics at certified recycling centers.",
-    points: 100,
-    difficulty: "easy" as const,
-    category: "Recycling",
-    timeEstimate: "30 min",
-    participants: 156,
-    location: "Any Electronics Store"
-  },
-  {
-    id: "3",
-    title: "Clean Beach Cleanup",
-    description: "Help remove plastic waste from our beautiful coastline.",
-    points: 200,
-    difficulty: "hard" as const,
-    category: "Clean-up",
-    timeEstimate: "4-5 hours",
-    participants: 89,
-    location: "Sunset Beach"
-  }
-];
 
 const mockLeaderboard = [
-  { id: "1", name: "EcoMaster Sarah", points: 2450, rank: 1, level: 12, badgeCount: 15 },
-  { id: "2", name: "GreenGuardian Mike", points: 2380, rank: 2, level: 11, badgeCount: 13 },
-  { id: "3", name: "TreeHugger Emma", points: 2200, rank: 3, level: 10, badgeCount: 12 },
-  { id: "4", name: "CleanQueen Alex", points: 1950, rank: 4, level: 9, badgeCount: 10 },
+  { id: "1", name: "EcoMaster Sarah", avatar: "", points: 2450, rank: 1, level: 12, badgeCount: 15 },
+  { id: "2", name: "GreenGuardian Mike", avatar: "", points: 2380, rank: 2, level: 11, badgeCount: 13 },
+  { id: "3", name: "TreeHugger Emma", avatar: "", points: 2200, rank: 3, level: 10, badgeCount: 12 },
+  { id: "4", name: "CleanQueen Alex", avatar: "", points: 1950, rank: 4, level: 9, badgeCount: 10 },
 ];
 
 const mockBadges = [
@@ -68,171 +43,296 @@ const mockBadges = [
 
 export const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("missions");
+  const [missions, setMissions] = useState<any[]>([]);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { user, signOut } = useAuth();
 
-  const handleStartMission = (missionId: string) => {
-    console.log(`Starting mission: ${missionId}`);
-    // TODO: Navigate to mission detail page
+  useEffect(() => {
+    if (user) {
+      fetchMissions();
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchMissions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('missions')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setMissions(data || []);
+    } catch (error) {
+      console.error('Error fetching missions:', error);
+      toast.error('Failed to load missions');
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartMission = async (missionId: string) => {
+    if (!user || !userProfile) return;
+
+    try {
+      const mission = missions.find(m => m.id === missionId);
+      if (!mission) return;
+
+      // Check if mission is already completed
+      const { data: existingCompletion } = await supabase
+        .from('user_missions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('mission_id', missionId)
+        .single();
+
+      if (existingCompletion) {
+        toast.error('Mission already completed!');
+        return;
+      }
+
+      // Complete the mission
+      const { error } = await supabase
+        .from('user_missions')
+        .insert({
+          user_id: user.id,
+          mission_id: missionId,
+          points_earned: mission.points
+        });
+
+      if (error) throw error;
+
+      toast.success(`Mission completed! Earned ${mission.points} points and 1 lottery ticket!`);
+      fetchUserProfile(); // Refresh profile to show updated stats
+    } catch (error) {
+      console.error('Error completing mission:', error);
+      toast.error('Failed to complete mission');
+    }
   };
 
   const handleJoinChallenge = () => {
     console.log("Joining weekly challenge");
-    // TODO: Join challenge logic
+    // TODO: Implement challenge joining logic
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-eco-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your eco-journey...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-primary to-accent rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">EQ</span>
+    <div className="min-h-screen bg-gradient-to-br from-eco-light/20 via-background to-eco-surface/30">
+      <header className="border-b border-eco-accent/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-eco-primary to-eco-secondary rounded-full flex items-center justify-center">
+                <Leaf className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-eco-primary to-eco-secondary bg-clip-text text-transparent">
+                  EcoQuest
+                </h1>
+                <p className="text-sm text-muted-foreground">Welcome back, {userProfile?.username || 'Eco-Warrior'}!</p>
+              </div>
             </div>
-            <div>
-              <h1 className="font-bold text-lg text-foreground">EcoQuest</h1>
-              <p className="text-xs text-muted-foreground">San Francisco</p>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" size="sm" className="border-eco-accent/20" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+              <Avatar className="w-8 h-8 border-2 border-eco-accent/20">
+                <AvatarImage src={userProfile?.avatar_url} />
+                <AvatarFallback className="bg-eco-light text-eco-primary">
+                  {userProfile?.username?.[0]?.toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" className="p-2">
-              <Search className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="ghost" className="p-2">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="ghost" className="p-2">
-              <Settings className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/20 via-accent/10 to-success/20">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-transparent" />
-        <img 
-          src={heroImage} 
-          alt="EcoQuest Community" 
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
-        />
-        <div className="relative px-4 py-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-2">
-              Make a Difference Today! 🌍
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              Join thousands of eco-champions in your city
-            </p>
-            <Button className="btn-eco-hero">
-              Start Your First Mission
+      <main className="container mx-auto px-4 py-6">
+        <div className="space-y-6">
+          <div className="flex space-x-1 p-1 bg-muted rounded-lg">
+            <Button
+              variant={activeTab === "missions" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("missions")}
+              className={activeTab === "missions" ? "bg-eco-primary text-white" : ""}
+            >
+              <Target className="w-4 h-4 mr-2" />
+              Missions
+            </Button>
+            <Button
+              variant={activeTab === "game" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("game")}
+              className={activeTab === "game" ? "bg-eco-primary text-white" : ""}
+            >
+              <Gamepad2 className="w-4 h-4 mr-2" />
+              Game
+            </Button>
+            <Button
+              variant={activeTab === "lottery" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("lottery")}
+              className={activeTab === "lottery" ? "bg-eco-primary text-white" : ""}
+            >
+              <Ticket className="w-4 h-4 mr-2" />
+              Lottery
+            </Button>
+            <Button
+              variant={activeTab === "leaderboard" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("leaderboard")}
+              className={activeTab === "leaderboard" ? "bg-eco-primary text-white" : ""}
+            >
+              <Trophy className="w-4 h-4 mr-2" />
+              Leaderboard
+            </Button>
+            <Button
+              variant={activeTab === "profile" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setActiveTab("profile")}
+              className={activeTab === "profile" ? "bg-eco-primary text-white" : ""}
+            >
+              <User className="w-4 h-4 mr-2" />
+              Profile
             </Button>
           </div>
-        </div>
-      </section>
 
-      {/* Navigation Tabs */}
-      <nav className="bg-card border-b border-border px-4 py-2">
-        <div className="flex gap-1">
-          {[
-            { id: "missions", label: "Missions", icon: MapPin },
-            { id: "leaderboard", label: "Leaderboard", icon: Trophy },
-            { id: "community", label: "Community", icon: Users },
-            { id: "profile", label: "Profile", icon: Camera }
-          ].map((tab) => (
-            <Button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              variant={activeTab === tab.id ? "default" : "ghost"}
-              size="sm"
-              className={`flex items-center gap-2 ${
-                activeTab === tab.id 
-                  ? "bg-primary text-primary-foreground" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </Button>
-          ))}
-        </div>
-      </nav>
+          {activeTab === "missions" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {missions.map((mission) => (
+                <MissionCard
+                  key={mission.id}
+                  mission={mission}
+                  onStart={() => handleStartMission(mission.id)}
+                />
+              ))}
+            </div>
+          )}
 
-      {/* Content */}
-      <main className="p-4 space-y-6">
-        {activeTab === "missions" && (
-          <>
-            {/* Weekly Challenge */}
-            <WeeklyChallengeCard
-              title="Plant 1000 Trees Together!"
-              description="Our city-wide tree planting challenge. Every tree counts toward cleaner air and a greener future."
-              goal={1000}
-              currentProgress={743}
-              participants={2341}
-              timeLeft="3 days left"
-              reward="Special Badge + Local Store Discounts"
-              isParticipating={false}
-              onJoinChallenge={handleJoinChallenge}
-            />
+          {activeTab === "game" && (
+            <div className="space-y-6">
+              <Card className="border-eco-accent/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Gamepad2 className="w-5 h-5 text-eco-primary" />
+                    EcoQuest Adventure Game
+                  </CardTitle>
+                  <CardDescription>
+                    Control your eco-warrior character and collect environmental rewards!
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PixelGame onScoreUpdate={(score) => console.log('Game score:', score)} />
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-            {/* User Progress */}
-            <ProgressCard
-              level={5}
-              currentXP={1240}
-              nextLevelXP={1500}
-              totalMissions={12}
-              completedMissions={8}
-              badges={mockBadges}
-            />
+          {activeTab === "lottery" && user && (
+            <LotteryTickets userId={user.id} />
+          )}
 
-            {/* Available Missions */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-foreground">Available Missions</h3>
-                <Badge className="bg-primary text-primary-foreground">
-                  {mockMissions.length} active
-                </Badge>
+          {activeTab === "leaderboard" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <LeaderboardCard
+                title="Global Leaderboard"
+                entries={mockLeaderboard}
+                currentUserId={user?.id}
+              />
+              <LeaderboardCard
+                title="Weekly Champions"
+                entries={mockLeaderboard.slice(0, 5)}
+                currentUserId={user?.id}
+              />
+            </div>
+          )}
+
+          {activeTab === "profile" && userProfile && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-6">
+                <Card className="border-eco-accent/20">
+                  <CardHeader>
+                    <CardTitle>Profile</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-center">
+                    <AvatarUpload
+                      userId={user?.id || ''}
+                      currentAvatarUrl={userProfile.avatar_url}
+                      onAvatarUpdate={(url) => setUserProfile(prev => ({ ...prev, avatar_url: url }))}
+                    />
+                    <div className="mt-4">
+                      <h3 className="text-lg font-semibold">{userProfile.username}</h3>
+                      <p className="text-sm text-muted-foreground">Level {userProfile.level} Eco-Warrior</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <ProgressCard
+                  level={userProfile.level}
+                  currentXP={userProfile.current_xp}
+                  nextLevelXP={userProfile.next_level_xp}
+                  totalMissions={userProfile.total_missions}
+                  completedMissions={userProfile.completed_missions}
+                  badges={mockBadges}
+                />
               </div>
-              <div className="grid gap-4">
-                {mockMissions.map((mission) => (
-                  <MissionCard
-                    key={mission.id}
-                    {...mission}
-                    onStartMission={handleStartMission}
-                  />
-                ))}
+              <div className="lg:col-span-2">
+                <Card className="border-eco-accent/20">
+                  <CardHeader>
+                    <CardTitle>Achievement Gallery</CardTitle>
+                    <CardDescription>Your environmental impact milestones</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {mockBadges.map((badge) => (
+                        <div key={badge.id} className="text-center p-4 border border-eco-accent/20 rounded-lg">
+                          <div className="text-2xl mb-2">{badge.icon}</div>
+                          <p className="text-sm font-medium">{badge.name}</p>
+                          <Badge variant="outline" className="mt-1 text-xs">
+                            {badge.rarity}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
-          </>
-        )}
-
-        {activeTab === "leaderboard" && (
-          <LeaderboardCard
-            title="Weekly Champions"
-            entries={mockLeaderboard}
-            currentUserId="4"
-          />
-        )}
-
-        {activeTab === "community" && (
-          <Card className="p-6 text-center">
-            <h3 className="text-xl font-bold mb-2">Community Features</h3>
-            <p className="text-muted-foreground mb-4">
-              Chat, team challenges, and verification coming soon!
-            </p>
-            <Button className="btn-eco-secondary">Join the Discussion</Button>
-          </Card>
-        )}
-
-        {activeTab === "profile" && (
-          <Card className="p-6 text-center">
-            <h3 className="text-xl font-bold mb-2">Your Eco Profile</h3>
-            <p className="text-muted-foreground mb-4">
-              View your achievements, upload mission photos, and track your impact!
-            </p>
-            <Button className="btn-eco-secondary">Edit Profile</Button>
-          </Card>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
