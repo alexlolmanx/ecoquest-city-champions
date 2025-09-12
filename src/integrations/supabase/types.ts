@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      communities: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          member_count: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          member_count?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          member_count?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leaderboard_rewards: {
         Row: {
           awarded_at: string
@@ -44,6 +80,48 @@ export type Database = {
           reward_description?: string
           reward_value?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      library_materials: {
+        Row: {
+          author: string | null
+          category: string | null
+          content_type: string
+          created_at: string
+          created_by: string
+          description: string | null
+          file_url: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          category?: string | null
+          content_type: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          category?: string | null
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -156,6 +234,48 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          price: number
+          stock_quantity: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          price: number
+          stock_quantity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          stock_quantity?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -198,6 +318,172 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          rating: number | null
+          target_id: string
+          target_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          target_id: string
+          target_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          rating?: number | null
+          target_id?: string
+          target_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      test_attempts: {
+        Row: {
+          answers: Json
+          completed_at: string
+          id: string
+          passed: boolean
+          percentage: number
+          score: number
+          started_at: string
+          test_id: string
+          time_taken: number | null
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          completed_at?: string
+          id?: string
+          passed: boolean
+          percentage: number
+          score: number
+          started_at?: string
+          test_id: string
+          time_taken?: number | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          id?: string
+          passed?: boolean
+          percentage?: number
+          score?: number
+          started_at?: string
+          test_id?: string
+          time_taken?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_attempts_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_questions: {
+        Row: {
+          correct_answer: string
+          id: string
+          options: Json | null
+          order_index: number
+          points: number | null
+          question_text: string
+          question_type: string
+          test_id: string
+        }
+        Insert: {
+          correct_answer: string
+          id?: string
+          options?: Json | null
+          order_index: number
+          points?: number | null
+          question_text: string
+          question_type?: string
+          test_id: string
+        }
+        Update: {
+          correct_answer?: string
+          id?: string
+          options?: Json | null
+          order_index?: number
+          points?: number | null
+          question_text?: string
+          question_type?: string
+          test_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_questions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tests: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          instructions: string | null
+          is_active: boolean | null
+          max_attempts: number | null
+          passing_score: number | null
+          time_limit: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          max_attempts?: number | null
+          passing_score?: number | null
+          time_limit?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          max_attempts?: number | null
+          passing_score?: number | null
+          time_limit?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_missions: {
         Row: {
           completed_at: string
@@ -230,6 +516,30 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -238,6 +548,10 @@ export type Database = {
       cleanup_expired_tickets: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

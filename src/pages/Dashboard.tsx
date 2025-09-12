@@ -23,9 +23,9 @@ import {
   Zap,
   Calendar,
   Settings,
-  LogOut,
   Gamepad2,
-  Ticket
+  Ticket,
+  LogOut
 } from "lucide-react";
 
 const mockLeaderboard = [
@@ -228,6 +228,15 @@ export const Dashboard = () => {
               <User className="w-4 h-4 mr-2" />
               Profile
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => window.open('/admin', '_blank')}
+              className="border border-eco-accent/20"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Admin
+            </Button>
           </div>
 
           {activeTab === "missions" && (
@@ -235,8 +244,16 @@ export const Dashboard = () => {
               {missions.map((mission) => (
                 <MissionCard
                   key={mission.id}
-                  mission={mission}
-                  onStart={() => handleStartMission(mission.id)}
+                  id={mission.id}
+                  title={mission.title}
+                  description={mission.description}
+                  points={mission.points}
+                  difficulty={mission.difficulty}
+                  category={mission.category}
+                  timeEstimate="30 min"
+                  participants={Math.floor(Math.random() * 100) + 1}
+                  location={mission.location}
+                  onStartMission={() => handleStartMission(mission.id)}
                 />
               ))}
             </div>
