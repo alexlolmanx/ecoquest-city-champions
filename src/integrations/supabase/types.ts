@@ -198,6 +198,45 @@ export type Database = {
           },
         ]
       }
+      main_posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          created_by: string | null
+          display_order: number | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       missions: {
         Row: {
           category: string
@@ -351,6 +390,45 @@ export type Database = {
           target_type?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      sponsors: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+          website_url?: string | null
         }
         Relationships: []
       }

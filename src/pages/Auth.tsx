@@ -51,6 +51,12 @@ const Auth = () => {
         toast.success("Welcome back! 🌱");
         navigate("/");
       } else {
+        // Prevent admin registration
+        if (email === 'patarashviligigi533@gmail.com') {
+          toast.error("This email is reserved for administrative purposes.");
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -71,7 +77,7 @@ const Auth = () => {
           return;
         }
 
-        toast.success("Account created! Check your email to verify your account.");
+        toast.success("Account created! You can now sign in with your credentials.");
       }
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
@@ -81,15 +87,15 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-eco-light via-eco-surface to-eco-primary/20 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-muted via-background to-primary/20 p-4">
       <div className="absolute inset-0 opacity-20" />
       
-      <Card className="w-full max-w-md relative z-10 backdrop-blur-sm bg-background/95 border-eco-accent/20 shadow-xl">
+      <Card className="w-full max-w-md relative z-10 backdrop-blur-sm bg-background/95 border-accent/20 shadow-xl">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-eco-primary to-eco-secondary rounded-full flex items-center justify-center mb-2">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mb-2">
             <Leaf className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-eco-primary to-eco-secondary bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
             EcoQuest
           </CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -109,7 +115,7 @@ const Auth = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required={!isLogin}
-                  className="border-eco-accent/20 focus:border-eco-primary"
+                  className="border-accent/20 focus:border-primary"
                 />
               </div>
             )}
@@ -123,7 +129,7 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="border-eco-accent/20 focus:border-eco-primary"
+                className="border-accent/20 focus:border-primary"
               />
             </div>
             
@@ -137,7 +143,7 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="border-eco-accent/20 focus:border-eco-primary pr-10"
+                  className="border-accent/20 focus:border-primary pr-10"
                 />
                 <Button
                   type="button"
@@ -157,7 +163,7 @@ const Auth = () => {
             
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-eco-primary to-eco-secondary hover:from-eco-primary/90 hover:to-eco-secondary/90 text-white font-medium py-2 transition-all duration-300"
+              className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-white font-medium py-2 transition-all duration-300"
               disabled={loading}
             >
               {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
@@ -169,7 +175,7 @@ const Auth = () => {
               type="button"
               variant="link"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-eco-primary hover:text-eco-secondary"
+              className="text-primary hover:text-secondary"
             >
               {isLogin
                 ? "Don't have an account? Sign up"
