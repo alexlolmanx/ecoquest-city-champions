@@ -19,10 +19,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Create admin role for specific email if it doesn't exist
+        if (session?.user?.email === 'patarashviligigi533@gmail.com') {
+          setTimeout(async () => {
+            const { data: existingRole } = await supabase
+              .from('user_roles')
+              .select('id')
+              .eq('user_id', session.user.id)
+              .eq('role', 'admin')
+              .single();
+
+            if (!existingRole) {
+              await supabase
+                .from('user_roles')
+                .insert({
+                  user_id: session.user.id,
+                  role: 'admin'
+                });
+            }
+          }, 1000);
+        }
       }
     );
 
