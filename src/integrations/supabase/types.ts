@@ -627,9 +627,30 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_test_questions_for_attempt: {
+        Args: { test_id_param: string }
+        Returns: {
+          id: string
+          options: Json
+          order_index: number
+          points: number
+          question_text: string
+          question_type: string
+        }[]
+      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      submit_test_attempt: {
+        Args: { answers_param: Json; test_id_param: string }
+        Returns: {
+          attempt_id: string
+          passed: boolean
+          percentage: number
+          score: number
+          total_questions: number
+        }[]
       }
     }
     Enums: {
